@@ -19,6 +19,40 @@ Pattern and helpers for writing Unity Burst jobs as generic Functions/Actions.
             private static readonly AddIntegersFuncX2 Instance = new AddIntegersFuncX2();
         }
         
-* View them like normal jobs in the Burst Inspector
+then call it like a normal function.
 
-[[https://i.imgur.com/Euj2xUd.jpg|alt=Shows up in burst inspector]]
+     var intResult3 = MyFunctions.AddIntegersFuncX2.Invoke(5, 7);
+        
+#### View as normal in the Burst Inspector
+
+<img src="https://i.imgur.com/Euj2xUd.jpg" target="_blank" />
+
+#### Still reasonably fast.
+
+<img src="https://i.imgur.com/y844kBw.jpg" target="_blank" />
+
+#### Pass complicated arguments
+
+        [BurstCompile]
+        public struct ArrayTestFunc : IBurstFunction<NativeArray<int>, NativeArray<int>, NativeArray<int>>
+        {
+            public NativeArray<int> Execute(NativeArray<int> arg1, NativeArray<int> arg2)
+            {
+                for (int i = 0; i < 100000; i++)
+                {
+                    arg1[i] = i;
+                }
+                for (int i = 0; i < 100000; i++)
+                {
+                    arg2[i] = arg1[i];
+                }
+                return arg2;
+            }
+
+            public static NativeArray<int> Invoke(NativeArray<int> a, NativeArray<int> b)
+            {
+                return BurstFunction<ArrayTestFunc, NativeArray<int>, NativeArray<int>, NativeArray<int>>.Run(Instance, a, b);
+            }
+
+            public static ArrayTestFunc Instance { get; } = new ArrayTestFunc();
+        }
