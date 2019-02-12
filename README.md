@@ -1,7 +1,7 @@
 # UnityBurstFunctions
 Pattern and helpers for writing Unity Burst jobs as generic Functions/Actions.
 
-* Write burst compiled jobs with easy arguments and return values.
+Write burst compiled jobs with easy arguments and return values.
 
         [BurstCompile]
         public struct AddIntegersFuncX2 : IBurstFunction<int, int, int>
