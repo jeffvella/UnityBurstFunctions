@@ -56,3 +56,39 @@ then call it like a normal function.
 
             public static ArrayTestFunc Instance { get; } = new ArrayTestFunc();
         }
+
+
+#### Pass by reference ('unmanaged' types only)
+
+Interface:
+
+		public interface IBurstRefAction<T1, T2, T3, T4, T5> : IBurstOperation
+		{
+			void Execute(ref T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+		}
+
+Implementation:
+
+        [BurstCompile]
+        public struct TryGetContact : IBurstRefAction<NativeManifold, RigidTransform, NativeHull, RigidTransform, NativeHull>
+        {
+            public void Execute(ref NativeManifold manifold, RigidTransform t1, NativeHull hull1, RigidTransform t2, NativeHull hull2)
+            {
+                HullIntersection.NativeHullHullContact(ref manifold, t1, hull1, t2, hull2);
+            }
+
+            public static bool Invoke(out NativeManifold result, RigidTransform t1, NativeHull hull1, RigidTransform t2, NativeHull hull2)
+            {
+                // Can only allocate as 'temp' within Burst Jobs 
+                result = new NativeManifold(Allocator.Persistent); 
+
+                BurstRefAction<TryGetContact, NativeManifold, RigidTransform, NativeHull, RigidTransform, NativeHull>.Run(Instance, ref result, t1, hull1, t2, hull2);
+                return result.Length > 0;
+            }
+
+            public static TryGetContact Instance { get; } = new TryGetContact();
+        }
+
+Calling Example:
+
+		var burstResult = HullOperations.TryGetContact.Invoke(out NativeManifold manifold, t1, hull1, t2, hull2);
